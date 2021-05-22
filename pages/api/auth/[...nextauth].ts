@@ -6,40 +6,42 @@ import Providers from "next-auth/providers"
 export default NextAuth({
   // https://next-auth.js.org/configuration/providers
   providers: [
-    Providers.Email({
-      server: process.env.EMAIL_SERVER,
-      from: process.env.EMAIL_FROM,
+    Providers.IdentityServer4({
+      id: "demo-identity-server",
+      name: "Demo IdentityServer4",
+      scope: "openid profile email api offline_access",
+      domain:  "demo.identityserver.io",
+      clientId: "interactive.confidential",
+      clientSecret: "secret",
+      protection: "pkce"
     }),
-    Providers.Apple({
-      clientId: process.env.APPLE_ID,
-      clientSecret: {
-        appleId: process.env.APPLE_ID,
-        teamId: process.env.APPLE_TEAM_ID,
-        privateKey: process.env.APPLE_PRIVATE_KEY,
-        keyId: process.env.APPLE_KEY_ID,
+    {
+      id: "adenin",
+      name: "adenin Digital Assistant",
+      type: "oauth",
+      version: "2.0",
+      scope: "",
+      params: { grant_type: "authorization_code" },
+      accessTokenUrl: "https://localhost:44367/oauth2/token",
+      // ?? requestTokenUrl: "https://accounts.google.com/o/oauth2/auth",
+      authorizationUrl: "https://localhost:44367/oauth2/authorize?response_type=code",
+      profileUrl: "https://localhost:44367/api/session/myprofile",
+      protection: "pkce",
+      async profile(profile, tokens) {
+        // You can use the tokens, in case you want to fetch more profile information
+        // For example several OAuth providers do not return email by default.
+        // Depending on your provider, will have tokens like `access_token`, `id_token` and or `refresh_token`
+        return {
+          id: profile.Data.Email,
+          name: profile.Data.DisplayName,
+          email: profile.Data.Email,
+          image: profile.picture,
+          session: profile.Data
+        }
       },
-    }),
-    Providers.Auth0({
-      clientId: process.env.AUTH0_ID,
-      clientSecret: process.env.AUTH0_SECRET,
-      domain: process.env.AUTH0_DOMAIN,
-    }),
-    Providers.Facebook({
-      clientId: process.env.FACEBOOK_ID,
-      clientSecret: process.env.FACEBOOK_SECRET,
-    }),
-    Providers.GitHub({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
-    }),
-    Providers.Google({
-      clientId: process.env.GOOGLE_ID,
-      clientSecret: process.env.GOOGLE_SECRET,
-    }),
-    Providers.Twitter({
-      clientId: process.env.TWITTER_ID,
-      clientSecret: process.env.TWITTER_SECRET,
-    }),
+      clientId: "tt94cztgbzknvmgfdyfiqk9ah4ej79hq",
+      clientSecret: ""
+    }
   ],
   // Database optional. MySQL, Maria DB, Postgres and MongoDB are supported.
   // https://next-auth.js.org/configuration/databases
